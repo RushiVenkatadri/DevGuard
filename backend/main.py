@@ -1,12 +1,22 @@
 from fastapi import FastAPI
-from backend.routers import auth  # Import the new auth router
+from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-@app.get("/")
-def read_root():
-    return {"message": "Welcome to DevGuard API"}
+# Enable CORS (Cross-Origin Resource Sharing)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],  # ✅ Ensure POST is allowed
+    allow_headers=["*"],
+)
 
-# Include authentication routes
-app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
+class ScanRequest(BaseModel):
+    url: str  # Input validation for the request body
 
+# ✅ Define the route correctly
+@app.post("/scan")
+async def scan_for_vulnerabilities(request: ScanRequest):
+    return {"status": "scanned", "url": request.url, "vulnerabilities": []}
